@@ -1,0 +1,137 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: WAF v2 Web ACL
+
+Parameters: 
+  WebACLName:
+    Description: The Name of WebACL.
+    Type: String
+
+Resources: 
+
+### WAF WebACL
+  WebACL:
+    Type: AWS::WAFv2::WebACL
+    Properties:
+      Name: !Ref WebACLName
+      DefaultAction: 
+        Allow: {}
+      Scope: REGIONAL
+      VisibilityConfig:
+        CloudWatchMetricsEnabled: true
+        MetricName: !Ref WebACLName
+        SampledRequestsEnabled: false
+      Rules:
+        - 
+          Name: AWS-AWSManagedRulesAmazonIpReputationList
+          Priority: 1
+          Statement:
+            ManagedRuleGroupStatement:
+              VendorName: AWS
+              Name: AWSManagedRulesAmazonIpReputationList
+          OverrideAction:
+            Count: {}
+          VisibilityConfig:
+            CloudWatchMetricsEnabled: true
+            MetricName: AWSManagedRulesAmazonIpReputationList
+            SampledRequestsEnabled: false
+        - 
+          Name: AWS-AWSManagedRulesCommonRuleSet
+          Priority: 2
+          Statement:
+            ManagedRuleGroupStatement:
+              VendorName: AWS
+              Name: AWSManagedRulesCommonRuleSet
+          OverrideAction:
+            Count: {}
+          VisibilityConfig:
+            CloudWatchMetricsEnabled: true
+            MetricName: AWSManagedRulesCommonRuleSet
+            SampledRequestsEnabled: false
+        - 
+          Name: AWS-AWSManagedRulesKnownBadInputsRuleSet
+          Priority: 3
+          Statement:
+            ManagedRuleGroupStatement:
+              VendorName: AWS
+              Name: AWSManagedRulesKnownBadInputsRuleSet
+          OverrideAction:
+            Count: {}
+          VisibilityConfig:
+            CloudWatchMetricsEnabled: true
+            MetricName: AWSManagedRulesKnownBadInputsRuleSet
+            SampledRequestsEnabled: false
+        - 
+          Name: AWS-AWSManagedRulesLinuxRuleSet
+          Priority: 4
+          Statement:
+            ManagedRuleGroupStatement:
+              VendorName: AWS
+              Name: AWSManagedRulesLinuxRuleSet
+          OverrideAction:
+            Count: {}
+          VisibilityConfig:
+            CloudWatchMetricsEnabled: true
+            MetricName: AWSManagedRulesLinuxRuleSet
+            SampledRequestsEnabled: false
+        - 
+          Name: AWS-AWSManagedRulesUnixRuleSet
+          Priority: 5
+          Statement:
+            ManagedRuleGroupStatement:
+              VendorName: AWS
+              Name: AWSManagedRulesUnixRuleSet
+          OverrideAction:
+            Count: {}
+          VisibilityConfig:
+            CloudWatchMetricsEnabled: true
+            MetricName: AWSManagedRulesUnixRuleSet
+            SampledRequestsEnabled: false
+        - 
+          Action: 
+            Count: {}
+          Name: Custom-IPaddress-BlackList
+          Priority: 0
+          Statement:
+            IPSetReferenceStatement:
+              Arn: !GetAtt IPBlackList.Arn
+          VisibilityConfig:
+            CloudWatchMetricsEnabled: true
+            MetricName: Custom-IPaddress-BlackList
+            SampledRequestsEnabled: false
+        -
+          Action: 
+            Count: {}
+          Name: Custom-Ratebased
+          Priority: 6
+          Statement:
+            RateBasedStatement:
+              AggregateKeyType: IP
+              Limit: 100
+              ScopeDownStatement:
+                NotStatement:
+                  Statement:
+                    IPSetReferenceStatement:
+                      Arn: !GetAtt IPWhiteList.Arn
+          VisibilityConfig:
+            CloudWatchMetricsEnabled: true
+            MetricName: Custom-Ratebased
+            SampledRequestsEnabled: false
+
+
+  IPWhiteList:
+    Type: "AWS::WAFv2::IPSet"
+    Properties:
+      Name: Custom-ipaddress-whitelist
+      Scope: REGIONAL
+      IPAddressVersion: IPV4
+      Addresses:
+        - 10.1.0.1/32 
+
+  IPBlackList:
+    Type: "AWS::WAFv2::IPSet"
+    Properties:
+      Name: Custom-ipaddress-blacklist
+      Scope: REGIONAL
+      IPAddressVersion: IPV4
+      Addresses:
+        - 10.1.0.1/32
