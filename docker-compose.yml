@@ -1,0 +1,16 @@
+version: '3.6'
+services:
+  vulnerable-app:
+    image: openjdk:15
+    ports:
+      - 80:8080
+    tty: true
+    volumes:
+      - ./vulnerable-app:/vulnerable-app
+    working_dir: /vulnerable-app
+    container_name: vulnerable-app
+  malicious-ldap:
+    image: ghcr.io/greymd/cve-2021-44228/server:latest
+    ports:
+      - 1389:1389
+    container_name: malicious-ldap
